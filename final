@@ -1,0 +1,94 @@
+
+CREATE DATABASE IF NOT EXISTS ecommerce
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE ecommerce;
+
+
+-- Cliente
+
+CREATE TABLE Cliente (
+    id          INT             NOT NULL AUTO_INCREMENT,
+    nome        VARCHAR(100)    NOT NULL,
+    senha       VARCHAR(255)    NOT NULL,
+    celular     VARCHAR(15)     NOT NULL,
+    cpf         VARCHAR(14)     NOT NULL,
+    email       VARCHAR(100)    NOT NULL,
+    CONSTRAINT pk_cliente PRIMARY KEY (id),
+    CONSTRAINT uk_cliente_cpf UNIQUE (cpf),
+    CONSTRAINT uk_cliente_email UNIQUE (email)
+);
+
+
+-- Produto
+
+CREATE TABLE Produto (
+    id          INT             NOT NULL AUTO_INCREMENT,
+    nome        VARCHAR(100)    NOT NULL,
+    descricao   TEXT,
+    categoria   VARCHAR(50)     NOT NULL,
+    preco       DECIMAL(10,2)   NOT NULL,
+    quantidade  INT             NOT NULL DEFAULT 0,
+    CONSTRAINT pk_produto PRIMARY KEY (id)
+);
+
+
+-- Endereco
+
+
+CREATE TABLE Endereco (
+    id          INT             NOT NULL AUTO_INCREMENT,
+    rua         VARCHAR(150)    NOT NULL,
+    numero      VARCHAR(10)     NOT NULL,
+    bairro      VARCHAR(80)     NOT NULL,
+    cidade      VARCHAR(80)     NOT NULL,
+    estado      CHAR(2)         NOT NULL,
+    cliente_id  INT             NOT NULL,
+    CONSTRAINT pk_endereco PRIMARY KEY (id),
+    CONSTRAINT fk_endereco_cliente
+        FOREIGN KEY (cliente_id) REFERENCES Cliente(id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
+
+
+-- Compra
+
+
+CREATE TABLE Compra (
+    id                INT             NOT NULL AUTO_INCREMENT,
+    data              DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    forma_pagamento   VARCHAR(50)     NOT NULL,
+    valor_total       DECIMAL(12,2)   NOT NULL,
+    cliente_id        INT             NOT NULL,
+    endereco_id       INT             NOT NULL,
+    CONSTRAINT pk_compra PRIMARY KEY (id),
+    CONSTRAINT fk_compra_cliente
+        FOREIGN KEY (cliente_id) REFERENCES Cliente(id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_compra_endereco
+        FOREIGN KEY (endereco_id) REFERENCES Endereco(id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
+
+
+-- ItemCompra
+
+
+CREATE TABLE ItemCompra (
+    compra_id       INT             NOT NULL,
+    produto_id      INT             NOT NULL,
+    quantidade      INT             NOT NULL,
+    valor_unitario  DECIMAL(10,2)   NOT NULL,
+    CONSTRAINT pk_item_compra PRIMARY KEY (compra_id, produto_id),
+    CONSTRAINT fk_item_compra
+        FOREIGN KEY (compra_id) REFERENCES Compra(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_item_produto
+        FOREIGN KEY (produto_id) REFERENCES Produto(id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
